@@ -26,9 +26,8 @@ def select_roi(event, x, y, flags, param):
             roi_start = roi_lines[-2]
             roi_end = roi_lines[-1]
             roi_regions.append((roi_start, roi_end))
-            roi_lines = []  # Reset the RoI line coordinates
+            roi_lines = []  
 
-# Set the mouse event handler for the window
 cv2.namedWindow("Video")
 cv2.setMouseCallback("Video", select_roi)
 
@@ -58,18 +57,15 @@ while cap.isOpened():
     for roi_start, roi_end in roi_regions:
         cv2.line(frame_copy, roi_start, roi_end, (0, 255, 0), 2)
     
-    # Calculate the bounding box that encompasses all RoI lines
     if len(roi_regions) > 0:
         roi_start = np.min([roi_start for (roi_start, _) in roi_regions], axis=0)
         roi_end = np.max([roi_end for (_, roi_end) in roi_regions], axis=0)
         
-        # Check if the RoI coordinates are valid
         if roi_start[1] < roi_end[1] and roi_start[0] < roi_end[0]:
             # Detect objects within the RoI
             roi = frame[roi_start[1]:roi_end[1], roi_start[0]:roi_end[0]]
             detections = detect_objects_yolov5(roi)
             
-            # Visualize the detections on the RoI frame
             for _, row in detections.iterrows():
                 x_min, y_min, x_max, y_max, confidence, class_id = row["xmin"], row["ymin"], row["xmax"], row["ymax"], row["confidence"], row["class"]
                 class_name = model.names[int(class_id)]
@@ -87,6 +83,5 @@ while cap.isOpened():
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
-# Release the video capture and close any open windows
 cap.release()
 cv2.destroyAllWindows()
